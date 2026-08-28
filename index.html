@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Untuk Keboo | Terima Kasih</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+	<style>
+		:root { --ink:#4e2738; --rose:#d95b82; --deep:#a83e65; --soft:#fff5f7; --line:#edb9c8; --leaf:#769d76; }
+		* { box-sizing:border-box; }
+		html, body { margin:0; min-height:100%; }
+		body { color:var(--ink); font-family:"DM Sans", sans-serif; background:#fff4f6; overflow-x:hidden; }
+		button { font-family:inherit; }
+		.loading-screen { position:fixed; z-index:20; inset:0; display:grid; place-items:center; background:linear-gradient(145deg,#fff8f8,#ffe2e8); transition:opacity .45s ease, visibility .45s; }
+		.loading-screen.done { opacity:0; visibility:hidden; pointer-events:none; }
+		.loading-box { text-align:center; color:var(--deep); }
+		.loading-flower { width:58px; height:58px; margin:0 auto 18px; border:7px dotted var(--rose); border-radius:50%; animation:loadingSpin 1.1s linear infinite; }
+		.loading-text { margin:0; font:italic 24px "Playfair Display",serif; }
+		.loading-dots { margin-top:8px; letter-spacing:4px; color:var(--rose); animation:loadingPulse 1s ease-in-out infinite; }
+		.scene { min-height:100vh; position:relative; overflow:hidden; background:radial-gradient(circle at 16% 10%, #fff 0 2%, transparent 25%), linear-gradient(145deg,#fff8f8 0%,#ffe2e8 52%,#f6c6d7 100%); }
+		.scene:before { content:""; position:absolute; inset:0; opacity:.3; background-image:radial-gradient(#da7895 1px,transparent 1px); background-size:25px 25px; mask-image:linear-gradient(to bottom,black,transparent 80%); }
+		.topbar { position:relative; z-index:5; width:min(1100px, calc(100% - 42px)); margin:auto; padding:28px 0 10px; display:flex; justify-content:space-between; align-items:center; }
+		.brand { letter-spacing:.12em; text-transform:uppercase; font-size:11px; font-weight:700; color:var(--deep); }
+		.music { border:1px solid var(--line); background:#ffffff9c; color:var(--deep); padding:10px 14px; border-radius:30px; cursor:pointer; font:600 12px "DM Sans"; transition:.25s; }
+		.music:hover { background:#fff; transform:translateY(-2px); }
+		.music-dot { display:inline-block; width:7px; height:7px; background:var(--rose); border-radius:50%; margin-right:7px; box-shadow:0 0 0 4px #d95b8230; }
+		main { position:relative; z-index:2; width:min(1100px, calc(100% - 42px)); margin:auto; min-height:calc(100vh - 76px); display:flex; flex-direction:column; justify-content:center; padding:20px 0 100px; }
+		.page { display:none; animation:rise .35s cubic-bezier(.2,.8,.2,1) both; }
+		.page.active { display:block; }
+		.eyebrow { color:var(--rose); font-size:12px; letter-spacing:.18em; text-transform:uppercase; font-weight:700; }
+		h1, h2 { font-family:"Playfair Display", serif; font-weight:500; margin:12px 0; line-height:1.05; }
+		h1 { font-size:clamp(48px,8vw,94px); max-width:760px; letter-spacing:-.04em; }
+		h2 { font-size:clamp(42px,6vw,72px); }
+		.script { font-style:italic; color:var(--rose); }
+		.lead { font-size:17px; line-height:1.7; max-width:500px; color:#765062; }
+		.actions { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:32px; }
+		.primary, .ghost { border-radius:30px; padding:14px 21px; cursor:pointer; font-weight:700; border:1px solid var(--rose); transition:transform .2s, box-shadow .2s, background .2s; }
+		.primary { color:#fff; background:var(--rose); box-shadow:0 10px 20px #c84e7533; }
+		.ghost { color:var(--deep); background:#ffffff80; }
+		.primary:hover, .ghost:hover { transform:translateY(-3px); box-shadow:0 10px 20px #c84e7533; }
+		.intro-page { max-width:760px; margin:0 auto; text-align:center; }
+		.intro-page .lead { margin-left:auto; margin-right:auto; }
+		.garden { height:470px; position:relative; }
+		.intro-garden { height:300px; margin:8px auto -4px; overflow:visible; }
+		.intro-garden:before { content:""; position:absolute; left:50%; bottom:11%; width:210px; height:34px; border-radius:50%; background:radial-gradient(ellipse at center,#9dbb9185 0 55%,transparent 72%); transform:translateX(-50%); opacity:0; animation:groundGlow 5s ease-out .2s both; }
+		.intro-stem { position:absolute; z-index:1; left:calc(50% - 4px); bottom:16%; width:8px; height:136px; border-radius:999px 999px 3px 3px; background:linear-gradient(90deg,#527c50,#91b77c 48%,#456b45); transform:scaleY(0) rotate(1deg); transform-origin:bottom; animation:stemGrow .8s cubic-bezier(.16,.9,.25,1) .12s both; }
+		.intro-stem:before { content:""; position:absolute; inset:7px 1px 8px auto; width:2px; border-radius:999px; background:#e4f0d7a8; }
+		.intro-leaf { position:absolute; z-index:1; left:calc(50% - 74px); bottom:35%; width:76px; height:30px; border-radius:100% 0 100% 0; background:linear-gradient(135deg,#9abd83,#527c50); transform-origin:right center; opacity:0; transform:scale(.2) rotate(-35deg); animation:leafUnfurl .85s cubic-bezier(.16,1,.3,1) .5s both; }
+		.intro-leaf.right { left:calc(50% + 3px); bottom:28%; border-radius:0 100% 0 100%; transform-origin:left center; animation:leafUnfurlRight .85s cubic-bezier(.16,1,.3,1) .68s both; }
+		.flower { position:absolute; bottom:67%; left:calc(54% - 43px); width:92px; height:92px; animation:breathe 3s ease-in-out infinite; transform-origin:center 70%; }
+		.intro-garden .flower { left:calc(50% - 54px); bottom:53%; width:108px; height:108px; animation:introFlowerFloat 1.5s cubic-bezier(.16,1,.26,1) .72s both, bloomBreathe 3.4s ease-in-out 2.3s infinite; }
+		.intro-garden .flower:before { content:""; position:absolute; z-index:5; left:38px; top:28px; width:32px; height:50px; border-radius:50% 50% 43% 43%; background:linear-gradient(160deg,#f2cf58,#c98e35 58%,#8f652d); box-shadow:inset 5px 4px 10px #fff6a0,0 10px 18px #875b2d26; transform-origin:bottom; animation:budOpen 1.35s ease-out .9s both; }
+		.petal { position:absolute; z-index:2; width:49px; height:70px; left:21px; top:10px; border-radius:50% 50% 45% 45%; background:#ef91ae; transform-origin:50% 88%; --angle:0deg; --tilt:0deg; --reach:-23px; --petal-scale:1; --petal-pop:1.12; --petal-dip:.96; transform:rotate(calc(var(--angle) + var(--tilt))) translateY(var(--reach)) scale(var(--petal-scale)); box-shadow:inset 5px 3px 10px #fff6; }
+		.petal.inner { z-index:3; width:39px; height:56px; left:27px; top:19px; --tilt:36deg; --reach:-16px; --petal-scale:.82; --petal-pop:.9; --petal-dip:.78; background:#f8adc1; opacity:.92; }
+		.petal.p1{--angle:0deg}.petal.p2{--angle:72deg}.petal.p3{--angle:144deg}.petal.p4{--angle:216deg}.petal.p5{--angle:288deg}
+		.center { position:absolute; z-index:4; width:30px; height:30px; left:31px; top:31px; border-radius:50%; background:#ffd472; box-shadow:0 0 0 7px #f4b45b55; overflow:hidden; }
+		.center:before { content:""; position:absolute; inset:6px; border-radius:50%; background:radial-gradient(circle,#6f421f 0 2px,transparent 3px); background-size:7px 7px; opacity:.42; }
+		.intro-garden .petal { background:linear-gradient(145deg,#ffe27a,#e9ae38); box-shadow:inset 7px 5px 12px #fff7a8,0 10px 18px #b37f2e1f; opacity:0; animation:introPetalOpen 1.65s cubic-bezier(.16,1,.25,1) var(--petal-delay,.9s) both; }
+		.intro-garden .petal.inner { background:linear-gradient(145deg,#ffe994,#f1be4c); box-shadow:inset 5px 4px 10px #fff9be,0 8px 14px #b37f2e16; animation-name:introInnerPetalOpen; }
+		.intro-garden .petal.p1 { --petal-delay:.82s; }
+		.intro-garden .petal.p2 { --petal-delay:.9s; }
+		.intro-garden .petal.p3 { --petal-delay:.98s; }
+		.intro-garden .petal.p4 { --petal-delay:1.06s; }
+		.intro-garden .petal.p5 { --petal-delay:1.14s; }
+		.intro-garden .petal.inner.p1 { --petal-delay:1.04s; }
+		.intro-garden .petal.inner.p2 { --petal-delay:1.1s; }
+		.intro-garden .petal.inner.p3 { --petal-delay:1.16s; }
+		.intro-garden .petal.inner.p4 { --petal-delay:1.22s; }
+		.intro-garden .petal.inner.p5 { --petal-delay:1.28s; }
+		.intro-garden .center { background:radial-gradient(circle at 42% 38%,#ffd56f 0 18%,#b87634 62%,#8c552d 100%); box-shadow:0 0 0 7px #8c552d44,0 6px 16px #7a492840; transform:scale(0); animation:centerBloom 3.7s cubic-bezier(.16,1,.25,1) 2.35s both; }
+		.sparkle { position:absolute; z-index:4; left:calc(50% + var(--sx)); bottom:calc(55% + var(--sy)); width:6px; height:6px; border-radius:50%; background:#fff8a8; box-shadow:0 0 13px 4px #fff2a2; opacity:0; transform:scale(.4); animation:sparkleTwinkle 2.6s ease-in-out var(--spark-delay) infinite; }
+		.sparkle:before, .sparkle:after { content:""; position:absolute; inset:2px -4px; background:#fff8a8; border-radius:999px; }
+		.sparkle:after { inset:-4px 2px; }
+		.sparkle.s1 { --sx:-82px; --sy:34px; --spark-delay:3.05s; }
+		.sparkle.s2 { --sx:78px; --sy:25px; --spark-delay:3.4s; }
+		.sparkle.s3 { --sx:-50px; --sy:-18px; --spark-delay:3.75s; }
+		.sparkle.s4 { --sx:48px; --sy:-25px; --spark-delay:4.05s; }
+		.sparkle.s5 { --sx:0px; --sy:58px; --spark-delay:4.3s; }
+		.intro-page h1, .intro-page .actions { opacity:1; transform:none; }
+		.photo-page { max-width:850px; margin:0 auto; text-align:center; }
+		.photo-collage { display:flex; justify-content:center; align-items:center; gap:24px; width:min(100%,730px); height:410px; margin:18px auto 8px; }
+		.photo-frame { position:relative; flex:0 1 235px; width:235px; height:300px; padding:12px 12px 48px; background:#fff; border:0; box-shadow:0 16px 25px #7f536033, 0 3px 8px #7f53601f; }
+		.photo-frame img { width:100%; height:100%; display:block; object-fit:cover; border-radius:0; background:#202020; }
+		.photo-frame:nth-child(1) { transform:rotate(-6deg) translateY(5px); }
+		.photo-frame:nth-child(2) { transform:rotate(6deg) translateY(-5px); }
+		.photo-caption { display:inline-block; padding:8px 17px; background:#fff; color:var(--deep); font-size:14px; font-weight:700; transform:rotate(-2deg); box-shadow:4px 5px 0 #d95b8233; }
+		.music-page { max-width:900px; margin:0 auto; text-align:center; }
+		.music-page .lead { margin-left:auto; margin-right:auto; }
+		.song-list { display:flex; justify-content:center; gap:24px; margin:28px auto 8px; }
+		.song-card { width:clamp(130px,23vw,190px); padding:0; border:0; background:none; color:var(--deep); cursor:pointer; text-align:center; }
+		.song-cover { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:18px; background:#202020; box-shadow:0 12px 22px #7f536033; transition:transform .22s, box-shadow .22s; }
+		.song-card:hover .song-cover, .song-card.playing .song-cover { transform:translateY(-6px); box-shadow:0 18px 26px #7f536055; }
+		.song-card.playing .song-cover { outline:4px solid var(--rose); outline-offset:4px; }
+		.song-label { display:block; margin-top:14px; font-weight:700; font-size:13px; }
+		.paper-page { max-width:700px; margin:0 auto; text-align:center; }
+		.writing-paper { position:relative; margin:30px auto; padding:70px 55px 75px; background:#fffdf8; border:1px solid #f0d7d1; box-shadow:12px 14px 0 #d95b8228, 0 20px 38px #b94d7022; transform:rotate(-1deg); }
+		.writing-paper:before { content:""; position:absolute; left:18px; top:0; bottom:0; width:2px; background:#f3b3bd; opacity:.65; }
+		.writing-paper:after { content:""; position:absolute; left:0; right:0; top:33px; height:1px; background:#f1c9ce; box-shadow:0 28px #f1c9ce, 0 56px #f1c9ce, 0 84px #f1c9ce, 0 112px #f1c9ce, 0 140px #f1c9ce, 0 168px #f1c9ce; opacity:.55; }
+		.typing-quote { position:relative; z-index:1; min-height:210px; display:flex; align-items:center; justify-content:center; font:italic clamp(26px,4vw,42px)/1.35 "Playfair Display",serif; color:#71354d; }
+		.caret { display:inline-block; width:2px; height:1.1em; margin-left:4px; background:var(--rose); animation:blink .8s steps(1) infinite; vertical-align:-.12em; }
+		.note-layout { display:grid; grid-template-columns:.85fr 1.15fr; gap:80px; align-items:center; }
+		.letter-wrap { perspective:1000px; min-height:330px; display:grid; place-items:center; }
+		.envelope { width:min(100%,540px); height:280px; position:relative; cursor:pointer; filter:drop-shadow(0 18px 18px #bb577033); transition:transform .5s; }
+		.envelope:hover { transform:translateY(-7px) rotate(1deg); }
+		.paper { display:none; position:absolute; z-index:1; left:7%; top:10%; width:86%; max-height:72vh; overflow:auto; padding:27px 31px; background:#fffdf9; border:1px solid #f3dbd6; pointer-events:none; transition:transform .9s cubic-bezier(.2,.9,.2,1); }
+		.paper h3 { margin:0 0 12px; font:italic 28px "Playfair Display",serif; color:var(--rose); }
+		.paper p { font-size:13px; line-height:1.7; margin:0; color:#6f4b59; }
+		.envelope.open .paper { display:block; transform:translateY(-150px) rotate(-2deg); z-index:5; pointer-events:auto; animation:paperRise 1.1s cubic-bezier(.2,.85,.25,1) both; }
+		.envelope-back, .flap, .pocket { position:absolute; inset:0; border-radius:4px; }
+		.envelope-back { z-index:2; background:#e990aa; }
+		.flap { z-index:3; background:#f2a9bd; clip-path:polygon(0 0,100% 0,50% 58%); transform-origin:top; transition:transform .7s; }
+		.pocket { z-index:3; background:#dc7896; clip-path:polygon(0 100%,0 37%,50% 70%,100% 37%,100% 100%); }
+		.envelope.open .flap { transform:rotateX(180deg); z-index:1; }
+		.signature { margin-top:25px; font:italic 25px "Playfair Display",serif; color:var(--rose); }
+		.dots { position:fixed; z-index:8; left:50%; bottom:29px; transform:translateX(-50%); display:flex; gap:10px; align-items:center; }
+		.dot { width:8px; height:8px; border:0; border-radius:50%; padding:0; background:#dd9aad; cursor:pointer; transition:.3s; }
+		.dot.active { width:28px; border-radius:10px; background:var(--rose); }
+		.nav { position:fixed; z-index:8; bottom:22px; right:32px; display:flex; gap:8px; }
+		.nav button { width:42px; height:42px; border:1px solid var(--line); background:#fff9; color:var(--deep); border-radius:50%; cursor:pointer; font-size:18px; }
+		.nav button:disabled { opacity:.35; cursor:default; }
+		@keyframes rise { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+		@keyframes loadingSpin { to{transform:rotate(360deg)} }
+		@keyframes loadingPulse { 0%,100%{opacity:.35} 50%{opacity:1} }
+		@keyframes breathe { 0%,100%{transform:scale(.96)}50%{transform:scale(1.08)} }
+		@keyframes bloomBreathe { 0%,100%{transform:scale(.99) rotate(-1deg)}50%{transform:scale(1.05) rotate(1deg)} }
+		@keyframes blink { 50%{opacity:0} }
+		@keyframes groundGlow { 0%{opacity:0;transform:translateX(-50%) scaleX(.2)} 55%,100%{opacity:1;transform:translateX(-50%) scaleX(1)} }
+		@keyframes stemGrow { 0%{opacity:0;transform:scaleY(0) rotate(-4deg)} 70%{opacity:1;transform:scaleY(1.04) rotate(2deg)} 100%{opacity:1;transform:scaleY(1) rotate(1deg)} }
+		@keyframes leafUnfurl { 0%{opacity:0;transform:scale(.15) rotate(-55deg)} 70%{opacity:1;transform:scale(1.08) rotate(-22deg)} 100%{opacity:1;transform:scale(1) rotate(-28deg)} }
+		@keyframes leafUnfurlRight { 0%{opacity:0;transform:scale(.15) rotate(55deg)} 70%{opacity:1;transform:scale(1.08) rotate(22deg)} 100%{opacity:1;transform:scale(1) rotate(28deg)} }
+		@keyframes introFlowerFloat { 0%{opacity:0;filter:blur(2px);transform:translateY(42px) scale(.18) rotate(-6deg)} 22%{opacity:1;filter:blur(0);transform:translateY(25px) scale(.42) rotate(-2deg)} 54%{transform:translateY(-4px) scale(1.08) rotate(2deg)} 72%{transform:translateY(2px) scale(.96) rotate(-1deg)} 100%{opacity:1;filter:blur(0);transform:translateY(0) scale(1) rotate(0)} }
+		@keyframes budOpen { 0%,24%{opacity:1;transform:translateY(8px) scale(.74) rotate(-3deg)} 55%{opacity:1;transform:translateY(0) scale(1) rotate(2deg)} 82%,100%{opacity:0;transform:translateY(-7px) scale(.25) rotate(20deg)} }
+		@keyframes introPetalOpen { 0%{opacity:0;filter:blur(1px);transform:rotate(calc(var(--angle) + var(--tilt) - 10deg)) translateY(7px) scale(.12,.36)} 22%{opacity:1;filter:blur(0);transform:rotate(calc(var(--angle) + var(--tilt) - 7deg)) translateY(-4px) scale(.32,.6)} 56%{opacity:1;transform:rotate(calc(var(--angle) + var(--tilt) + 5deg)) translateY(calc(var(--reach) - 7px)) scale(var(--petal-pop))} 76%{transform:rotate(calc(var(--angle) + var(--tilt) - 2deg)) translateY(calc(var(--reach) + 2px)) scale(var(--petal-dip))} 100%{opacity:1;filter:blur(0);transform:rotate(calc(var(--angle) + var(--tilt))) translateY(var(--reach)) scale(var(--petal-scale))} }
+		@keyframes introInnerPetalOpen { 0%{opacity:0;filter:blur(1px);transform:rotate(calc(var(--angle) + var(--tilt) - 14deg)) translateY(4px) scale(.08,.3)} 28%{opacity:.95;filter:blur(0);transform:rotate(calc(var(--angle) + var(--tilt) - 7deg)) translateY(-2px) scale(.28,.56)} 60%{opacity:.96;transform:rotate(calc(var(--angle) + var(--tilt) + 4deg)) translateY(calc(var(--reach) - 5px)) scale(var(--petal-pop))} 100%{opacity:.96;filter:blur(0);transform:rotate(calc(var(--angle) + var(--tilt))) translateY(var(--reach)) scale(var(--petal-scale))} }
+		@keyframes centerBloom { 0%,20%{opacity:0;transform:scale(0) rotate(-18deg)} 52%{opacity:1;transform:scale(1.2) rotate(8deg)} 72%{transform:scale(.9) rotate(-4deg)} 100%{opacity:1;transform:scale(1) rotate(0)} }
+		@keyframes sparkleTwinkle { 0%,18%{opacity:0;transform:translateY(8px) scale(.2) rotate(0)} 38%{opacity:1;transform:translateY(0) scale(1) rotate(45deg)} 66%{opacity:.5;transform:translateY(-8px) scale(.7) rotate(90deg)} 100%{opacity:0;transform:translateY(-16px) scale(.15) rotate(135deg)} }
+		@keyframes introText { to{opacity:1;transform:none} }
+		@keyframes paperRise { from{opacity:0;transform:translateY(30px) rotate(-2deg)} to{opacity:1;transform:translateY(-150px) rotate(-2deg)} }
+		@media (max-width:700px){
+			.topbar, main { width:calc(100% - 32px); }
+			main { padding-top:20px; padding-bottom:90px; }
+			h1 { font-size:clamp(44px,14vw,64px); }
+			h2 { font-size:clamp(38px,12vw,58px); }
+			.garden { height:270px; order:-1; }
+			.lead { font-size:15px; }
+			.note-layout { grid-template-columns:1fr; gap:24px; }
+			.letter-wrap { min-height:300px; }
+			.envelope { height:215px; }
+			.paper { padding:20px; }
+			.paper p { font-size:11px; }
+			.envelope.open .paper { transform:translateY(-110px); }
+			.photo-collage { height:325px; gap:12px; }
+			.photo-frame { flex-basis:155px; width:155px; height:220px; padding:8px 8px 36px; }
+			.song-list { gap:10px; }
+			.song-card { width:clamp(92px,28vw,130px); }
+			.song-cover { border-radius:13px; }
+			.writing-paper { padding:52px 30px 58px; }
+			.writing-paper:after { top:25px; }
+			.typing-quote { min-height:240px; font-size:27px; }
+			.nav { right:16px; }
+			.brand { font-size:10px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="loading-screen" id="loadingScreen" aria-live="polite">
+		<div class="loading-box">
+			<div class="loading-flower" aria-hidden="true"></div>
+			<p class="loading-text">Sebentar yaa...</p>
+			<div class="loading-dots" aria-hidden="true">. . .</div>
+		</div>
+	</div>
+	<div class="scene">
+		<header class="topbar">
+			<div class="brand">sebuah halaman kecil</div>
+			<button class="music" id="musicBtn"><span class="music-dot"></span><span id="musicLabel">Nyalakan musik</span></button>
+		</header>
+
+		<main>
+			<section class="page active" data-page="0">
+				<div class="intro-page">
+					<div class="eyebrow">halaman pertama &middot; bunga untukmu</div>
+					<div class="garden intro-garden" aria-hidden="true">
+						<div class="intro-stem"></div>
+						<div class="intro-leaf"></div>
+						<div class="intro-leaf right"></div>
+						<div class="flower">
+							<div class="petal p1"></div>
+							<div class="petal p2"></div>
+							<div class="petal p3"></div>
+							<div class="petal p4"></div>
+							<div class="petal p5"></div>
+							<div class="petal inner p1"></div>
+							<div class="petal inner p2"></div>
+							<div class="petal inner p3"></div>
+							<div class="petal inner p4"></div>
+							<div class="petal inner p5"></div>
+							<div class="center"></div>
+						</div>
+						<i class="sparkle s1"></i>
+						<i class="sparkle s2"></i>
+						<i class="sparkle s3"></i>
+						<i class="sparkle s4"></i>
+						<i class="sparkle s5"></i>
+					</div>
+					<h1>Untuk paporit person <span class="script">awokok</span></h1>
+					<div class="actions"><button class="primary next">Selanjutnya&nbsp; &rarr;</button></div>
+				</div>
+			</section>
+
+			<section class="page" data-page="1">
+				<div class="intro-page">
+					<div class="eyebrow">halaman kedua &middot; pembuka</div>
+					<h2>Hahh apanyak?</h2>
+					<p class="lead">Bukan hanya sekadar ucapan biasa, tapi sebuah ucapan yang dibuat sepenuh hati oleh seseorang yang ingin berterima kasih dengan cara yang sedikit berbeda.</p>
+					<div class="actions"><button class="primary next">Selanjutnya&nbsp; &rarr;</button></div>
+				</div>
+			</section>
+
+			<section class="page" data-page="2">
+				<div class="photo-page">
+					<div class="eyebrow">halaman ketiga &middot; galeri kecil</div>
+					<h2><span class="script">Top Aib</span> Awokwokw</h2>
+					<div class="photo-collage">
+						<div class="photo-frame"><img src="poto1.jpeg" alt="Foto kenangan pertama"></div>
+						<div class="photo-frame"><img src="poto2.jpeg" alt="Foto kenangan kedua"></div>
+					</div>
+					<div class="photo-caption">top aib awokwokw &#10047;</div>
+					<div class="actions"><button class="primary next">Selanjutnya&nbsp; &rarr;</button></div>
+				</div>
+			</section>
+
+			<section class="page" data-page="3">
+				<div class="music-page">
+					<div class="eyebrow">halaman keempat &middot; playlist kecil</div>
+					<h2>Top 3 lagu <span class="script">favorit kamu</span></h2>
+					<p class="lead">Pencet sampulnya buat dengerin lagunya hehe.</p>
+					<div class="song-list">
+						<button class="song-card" data-song="music1.mp3" aria-label="Putar lagu favorit pertama">
+							<img class="song-cover" src="sampul1.jpeg" alt="Sampul lagu favorit pertama">
+							<span class="song-label">KEKAL</span>
+						</button>
+						<button class="song-card" data-song="music2.mp3" aria-label="Putar lagu favorit kedua">
+							<img class="song-cover" src="sampul2.jpeg" alt="Sampul lagu favorit kedua">
+							<span class="song-label">TARUH</span>
+						</button>
+						<button class="song-card" data-song="music3.mp3" aria-label="Putar lagu favorit ketiga">
+							<img class="song-cover" src="sampul3.jpeg" alt="Sampul lagu favorit ketiga">
+							<span class="song-label">RAYUAN PEREMPUAN GILA</span>
+						</button>
+					</div>
+					<div class="actions"><button class="primary next">Selanjutnya&nbsp; &rarr;</button></div>
+				</div>
+			</section>
+
+			<section class="page" data-page="4">
+				<div class="paper-page">
+					<div class="eyebrow">halaman kelima &middot; sebuah catatan</div>
+					<div class="writing-paper">
+						<div class="typing-quote"><span id="typedQuote"></span><span class="caret"></span></div>
+					</div>
+					<div class="actions"><button class="primary next">Selanjutnya&nbsp; &rarr;</button></div>
+				</div>
+			</section>
+
+			<section class="page" data-page="5">
+				<div class="intro-page">
+					<div class="eyebrow">halaman keenam &middot; sedikit kejutan</div>
+					<h2>Aku ada <span class="script">something</span> buwad kamu hehe</h2>
+					<div class="actions"><button class="primary next">Selanjutnya&nbsp; &rarr;</button></div>
+				</div>
+			</section>
+
+			<section class="page" data-page="6">
+				<div class="note-layout">
+					<div>
+						<div class="eyebrow">halaman ketujuh &middot; buka perlahan</div>
+						<h2>Ada surat kecil <span class="script">untukmu.</span></h2>
+						<p class="lead">Klik amplopnya. Isinya mungkin sederhana, tapi setiap katanya datang dari tempat yang tulus.</p>
+						<div class="signature">dengan hangat, dari aku &#129293;</div>
+					</div>
+					<div class="letter-wrap">
+						<div class="envelope" id="envelope" aria-label="Buka surat">
+							<div class="paper">
+								<h3>Untuk partner ceritaku,</h3>
+								<p>Makasih ya udah jadi partner organisasi yang baik selama ini. Makasih juga karena udah mau jadi tempat cerita dan tempat buat ngobrol tentang banyak hal. Kadang mungkin aku juga terlalu banyak cerita atau malah bikin kamu pusing wkwk.<br><br>Aku juga mau minta maaf kalau selama ini aku pernah nyebelin, bikin kesel, salah ngomong, terlalu banyak bercanda, atau ada sikapku yang kurang berkenan. Kalau ada salah, jangan dipendem sendiri ya, bilang aja.<br><br>Next periode kita jalanin bareng-bareng lagi. Semoga kita bisa lebih kompak, lebih enak komunikasinya, dan bisa saling bantu kalau ada masalah. Aku juga siap kok kalau kamu mau cerita apa pun, jadi jangan malu-malu atau sungkan buat cerita. Kalau lagi butuh tempat buat ngomel juga gapapa wkwk, aku dengerin.<br><br>Apalagi sekarang lagi PMS, semangat yaa 😭 Kalau lagi gampang kesel, mood berubah-ubah, atau badan lagi nggak enak, jangan terlalu maksain diri. Istirahat yang cukup dan jangan lupa makan. Kalau lagi bad mood, gapapa, manusiawi kok. Yang penting jangan sampai tugas organisasi ikut kena imbasnya wkwkwk.<br><br>Pokoknya semangat terus. Kalau ada apa-apa, cerita aja. Next periode kita lewatin bareng-bareng, semoga semuanya bisa berjalan lebih baik dari sebelumnya. Makasih udah jadi partner yang bisa diajak kerja sama dan cerita selama ini.</p>
+							</div>
+							<div class="envelope-back"></div>
+							<div class="flap"></div>
+							<div class="pocket"></div>
+						</div>
+					</div>
+				</div>
+				<p class="lead" style="max-width:none; margin:18px auto 0; text-align:center;">Moga kamu sukak hehe. Maap kalo anuu.</p>
+			</section>
+
+		</main>
+
+		<div class="dots">
+			<button class="dot active" data-go="0" aria-label="Halaman satu"></button>
+			<button class="dot" data-go="1" aria-label="Halaman dua"></button>
+			<button class="dot" data-go="2" aria-label="Halaman tiga"></button>
+			<button class="dot" data-go="3" aria-label="Halaman empat"></button>
+			<button class="dot" data-go="4" aria-label="Halaman lima"></button>
+			<button class="dot" data-go="5" aria-label="Halaman enam"></button>
+			<button class="dot" data-go="6" aria-label="Halaman tujuh"></button>
+		</div>
+		<div class="nav"><button id="prev" aria-label="Sebelumnya">&larr;</button><button id="next" aria-label="Berikutnya">&rarr;</button></div>
+	</div>
+
+	<script>
+		const pages = [...document.querySelectorAll('.page')];
+		const dots = [...document.querySelectorAll('.dot')];
+		let current = 0;
+		const quoteText = 'Beberapa orang datang bukan untuk sekadar tinggal, tapi untuk membuat perjalanan terasa lebih ringan.';
+		let typingTimer;
+		const nextNav = document.querySelector('#next');
+		const prevNav = document.querySelector('#prev');
+
+		function typeQuote() {
+			clearInterval(typingTimer);
+			const target = document.querySelector('#typedQuote');
+			target.textContent = '';
+			let character = 0;
+			typingTimer = setInterval(() => {
+				target.textContent = quoteText.slice(0, character++);
+				if (character > quoteText.length) clearInterval(typingTimer);
+			}, 48);
+		}
+
+		function showPage(index) {
+			current = Math.max(0, Math.min(index, pages.length - 1));
+			pages.forEach((page, i) => page.classList.toggle('active', i === current));
+			dots.forEach((dot, i) => dot.classList.toggle('active', i === current));
+			prevNav.disabled = current === 0;
+			nextNav.disabled = current === pages.length - 1;
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+			if (current === 4) typeQuote();
+		}
+
+		document.querySelectorAll('.next').forEach(button => button.addEventListener('click', () => showPage(current + 1)));
+		nextNav.addEventListener('click', () => showPage(current + 1));
+		prevNav.addEventListener('click', () => showPage(current - 1));
+		dots.forEach(dot => dot.addEventListener('click', () => showPage(Number(dot.dataset.go))));
+		document.querySelector('#envelope').addEventListener('click', event => event.currentTarget.classList.toggle('open'));
+		const songCards = [...document.querySelectorAll('.song-card')];
+		let selectedAudio = null;
+		songCards.forEach(card => card.addEventListener('click', () => {
+			if (musicOn) {
+				clearTimeout(timer);
+				audioContext.suspend();
+				musicOn = false;
+				musicLabel.textContent = 'Nyalakan musik';
+			}
+			if (selectedAudio) selectedAudio.pause();
+			if (selectedAudio?.src.endsWith(card.dataset.song)) {
+				selectedAudio.currentTime = 0;
+				selectedAudio = null;
+				songCards.forEach(item => item.classList.remove('playing'));
+				return;
+			}
+			selectedAudio = new Audio(card.dataset.song);
+			selectedAudio.play().catch(() => {});
+			songCards.forEach(item => item.classList.toggle('playing', item === card));
+			selectedAudio.addEventListener('ended', () => card.classList.remove('playing'), { once:true });
+		}));
+
+		let audioContext, musicOn = false, timer;
+		const musicButton = document.querySelector('#musicBtn');
+		const musicLabel = document.querySelector('#musicLabel');
+		function tone(time, frequency, duration, volume) {
+			const oscillator = audioContext.createOscillator();
+			const gain = audioContext.createGain();
+			oscillator.type = 'sine';
+			oscillator.frequency.value = frequency;
+			gain.gain.setValueAtTime(0.0001, time);
+			gain.gain.exponentialRampToValueAtTime(volume, time + .04);
+			gain.gain.exponentialRampToValueAtTime(.0001, time + duration);
+			oscillator.connect(gain).connect(audioContext.destination);
+			oscillator.start(time);
+			oscillator.stop(time + duration + .05);
+		}
+		function playLoop() {
+			clearTimeout(timer);
+			const now = audioContext.currentTime;
+			[261.63,329.63,392,523.25].forEach((note, i) => tone(now + i * .48, note, 2.1, .045));
+			timer = setTimeout(playLoop, 1900);
+		}
+		function startMusic() {
+			if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+			audioContext.resume().then(() => {
+				if (audioContext.state !== 'running') return;
+				musicOn = true;
+				musicLabel.textContent = 'Musik menyala';
+				playLoop();
+			}).catch(() => {});
+		}
+		musicButton.addEventListener('click', () => {
+			if (musicOn) {
+				clearTimeout(timer);
+				if (audioContext) audioContext.suspend();
+				musicOn = false;
+				musicLabel.textContent = 'Nyalakan musik';
+			} else {
+				startMusic();
+			}
+		});
+		document.addEventListener('pointerdown', () => {
+			if (!musicOn) startMusic();
+		}, { once: true });
+
+		function preloadAssets() {
+			const imageSources = [...document.images].map(image => image.src);
+			const audioSources = ['music1.mp3', 'music2.mp3', 'music3.mp3'];
+			const imagePromises = imageSources.map(source => new Promise(resolve => {
+				const image = new Image();
+				image.onload = resolve;
+				image.onerror = resolve;
+				image.src = source;
+			}));
+			const audioPromises = audioSources.map(source => new Promise(resolve => {
+				const audio = new Audio();
+				audio.preload = 'auto';
+				audio.oncanplaythrough = resolve;
+				audio.onerror = resolve;
+				audio.src = source;
+			}));
+			return Promise.race([
+				Promise.all([...imagePromises, ...audioPromises]),
+				new Promise(resolve => setTimeout(resolve, 1800))
+			]);
+		}
+
+		showPage(0);
+		preloadAssets().then(() => document.querySelector('#loadingScreen').classList.add('done'));
+		startMusic();
+	</script>
+</body>
+</html>
